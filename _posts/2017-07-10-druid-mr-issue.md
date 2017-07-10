@@ -80,7 +80,7 @@ Hadoop的task有两个类加载器，ApplicationClassLoader和JobClassLoader
 ```
 "jobProperties": {
   "mapreduce.job.classloader": "true",
-  "mapreduce.job.classloader.system.classes": "-javax.validation.,java.,javax.,org.apache.commons.logging.,org.apache.log4j.,org.apache.hadoop."
+  "mapreduce.job.classloader.system.classes": "-javax.validation.,java.,javax.,org.apache.commons.logging.,org.apache.log4j."
 }
 ```
 
@@ -243,3 +243,7 @@ public static void setupClasspath(
 
 ## 总结
 
+为了避免Druid与Hadoop包冲突，主要做两件事情：  
+
+1. 上传jar时，不上传hadoop相关的jar；  
+2. 避免Druid引入的第三方包之间有冲突。
