@@ -20,6 +20,3 @@ type: page
 * Email：huangskery@163.com
 * QQ：278891950
 
-## Comments
-
-{% include comments.html %}
