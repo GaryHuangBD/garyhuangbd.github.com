@@ -7,7 +7,7 @@
 
 # Site settings
 title: 
-brief-intro: Front-end Dev Engineer
+brief-intro: 我是一个程序猿
 baseurl: "" # the subpath of your site, e.g. /blog
 url: "https://garyhuangbd.github.io/" # the base hostname & protocol for your site
 
