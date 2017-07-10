@@ -19,7 +19,7 @@ tags: Druid问题 MR
 
 ## 官方的解决办法  
 
-在开始之前先来看看官方的[解决办法](http://druid.io/docs/0.10.0/operations/other-hadoop.html)，总结来看官方给的方案有两种：  
+在开始之前先来看看官方的解决办法[(http://druid.io/docs/0.10.0/operations/other-hadoop.html)](http://druid.io/docs/0.10.0/operations/other-hadoop.html)，总结来看官方给的方案有两种：  
 
 1.通过参数设置  
 
@@ -89,7 +89,7 @@ Hadoop的task有两个类加载器，ApplicationClassLoader和JobClassLoader
 }
 ```
 
-这个地方做个特别说明：`"mapreduce.job.classloader": "true"有bug，在hadoop2.6.0之后的版本才修复`。具体可见：https://issues.apache.org/jira/browse/MAPREDUCE-5957。
+这个地方做个特别说明：`"mapreduce.job.classloader": "true"有bug，在hadoop2.6.0之后的版本才修复`。具体可见：[https://issues.apache.org/jira/browse/MAPREDUCE-5957](https://issues.apache.org/jira/browse/MAPREDUCE-5957)。
 在使用时，切记hadoop版本在2.6.0以上。
 
 2.MR程序时候不上传Hadoop的jar  
@@ -117,7 +117,7 @@ public static void setupClasspath(
 另外需要注意的是最好保证`druid.indexer.task.defaultHadoopCoordinates=["org.apache.hadoop:hadoop-client:{version}"]`中的version与Hadoop集群的一致。
 
 3.druid-orc-extensions的pom中hadoop的依赖改为`provided`，然后exclude掉所有的hadoop依赖，另外还需要exclude掉calcite-avatica，因为这个jar里面包含jackson的包，
-可能会引起jar的冲突，会出现` java.lang.VerifyError: class com.fasterxml.jackson.datatype.guava.deser.HostAndPortDeserializer overrides final method deserialize.(Lcom/fasterxml/jackson/core/JsonParser;Lcom/fasterxml/jackson/databind/DeserializationContext;)Ljava/lang/Object;`的错误。以下是我的pom：  
+导致覆盖了jackson包里面的类，会出现`java.lang.VerifyError: class com.fasterxml.jackson.datatype.guava.deser.HostAndPortDeserializer overrides final method deserialize.`的错误。以下是我的pom：  
 
 ```
 <dependencies>
