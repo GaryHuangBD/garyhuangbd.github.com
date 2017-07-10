@@ -11,7 +11,7 @@ title: GaryHuangBD's blog
 brief-intro: 我是一个程序猿
 
 baseurl: "" # the subpath of your site, e.g. /blog
-url: "https://garyhuangbd.github.io/" # the base hostname & protocol for your site
+url: "http://garyhuang.name/" # the base hostname & protocol for your site
 
 permalink: /:year/:month/:day/:title/
 
