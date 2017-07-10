@@ -12,11 +12,16 @@ tags: Druid问题 MR
 关于MR离线的方式生成Druid的索引，很多人都遇到问题，druid在google上面的User Group也是很多人在问，但貌似都没有很好的解决。
 我最近也遇到这些坑爹的问题，没有办法自己来分析这些问题，下面是自己关于这些问题的总结。  
 
+
+
+
+
+
 ## 官方的解决办法  
 
 在开始之前先来看看官方的[解决办法](http://druid.io/docs/0.10.0/operations/other-hadoop.html)，总结来看官方给的方案有两种：  
 
-1. 通过参数设置  
+1.通过参数设置  
 
 ```  
 "jobProperties": {
@@ -25,7 +30,7 @@ tags: Druid问题 MR
 }
 ```
 
-2. 打fat包  
+2.打fat包  
 
 官方给出了三种办法来打fat jar，此处不再细说。打好包后，可以直接使用这个fat jar，不再需要其他的jar了。例如可以直接执行下面命令启动MR：  
 
@@ -75,7 +80,7 @@ Hadoop的task有两个类加载器，ApplicationClassLoader和JobClassLoader
 
 ## 我的解决办法  
 
-1. 设置参数  
+1.设置参数  
 
 ```
 "jobProperties": {
@@ -87,7 +92,7 @@ Hadoop的task有两个类加载器，ApplicationClassLoader和JobClassLoader
 这个地方做个特别说明：`"mapreduce.job.classloader": "true"有bug，在hadoop2.6.0之后的版本才修复`。具体可见：https://issues.apache.org/jira/browse/MAPREDUCE-5957。
 在使用时，切记hadoop版本在2.6.0以上。
 
-2. MR程序时候不上传Hadoop的jar  
+2.MR程序时候不上传Hadoop的jar  
 
 考虑到一些模块依赖不同的hadoop版本，例如`druid-hdfs-storage`依赖hadoop2.3，可能会引发MR不同版本的兼容性，所以在此处我修改了Druid的jobHelp类：  
 
@@ -111,7 +116,7 @@ public static void setupClasspath(
 
 另外需要注意的是最好保证`druid.indexer.task.defaultHadoopCoordinates=["org.apache.hadoop:hadoop-client:{version}"]`中的version与Hadoop集群的一致。
 
-3. druid-orc-extensions的pom中hadoop的依赖改为`provided`，然后exclude掉所有的hadoop依赖，另外还需要exclude掉calcite-avatica，因为这个jar里面包含jackson的包，
+3.druid-orc-extensions的pom中hadoop的依赖改为`provided`，然后exclude掉所有的hadoop依赖，另外还需要exclude掉calcite-avatica，因为这个jar里面包含jackson的包，
 可能会引起jar的冲突，会出现` java.lang.VerifyError: class com.fasterxml.jackson.datatype.guava.deser.HostAndPortDeserializer overrides final method deserialize.(Lcom/fasterxml/jackson/core/JsonParser;Lcom/fasterxml/jackson/databind/DeserializationContext;)Ljava/lang/Object;`的错误。以下是我的pom：  
 
 ```
@@ -245,5 +250,5 @@ public static void setupClasspath(
 
 为了避免Druid与Hadoop包冲突，主要做两件事情：  
 
-1. 上传jar时，不上传hadoop相关的jar；  
-2. 避免Druid引入的第三方包之间有冲突。
+1.上传jar时，不上传hadoop相关的jar；  
+2.避免Druid引入的第三方包之间有冲突。
