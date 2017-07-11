@@ -92,9 +92,9 @@ Hadoop的task有两个类加载器，ApplicationClassLoader和JobClassLoader
 这个地方做个特别说明：`"mapreduce.job.classloader": "true"有bug，在hadoop2.6.0之后的版本才修复`。具体可见：[https://issues.apache.org/jira/browse/MAPREDUCE-5957](https://issues.apache.org/jira/browse/MAPREDUCE-5957)。
 在使用时，切记hadoop版本在2.6.0以上。
 
-2.MR程序时候不上传Hadoop的jar  
+2.不上传Hadoop的jar  
 
-考虑到一些模块依赖不同的hadoop版本，例如`druid-hdfs-storage`依赖hadoop2.3，可能会引发MR不同版本的兼容性，所以在此处我修改了Druid的jobHelp类：  
+如果依赖Hadoop的模块，pom中依赖改为`provided`，则不需要这一步。主要考虑到一些模块依赖不同的hadoop版本，例如`druid-hdfs-storage`依赖hadoop2.3，可能会引发MR不同版本的兼容性，所以在此处我修改了Druid的jobHelp类： 
 
 ```
 public static void setupClasspath(
