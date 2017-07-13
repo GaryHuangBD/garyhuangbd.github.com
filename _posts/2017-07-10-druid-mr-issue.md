@@ -251,4 +251,66 @@ public static void setupClasspath(
 为了避免Druid与Hadoop包冲突，主要做两件事情：  
 
 1.上传jar时，不上传hadoop相关的jar；  
-2.避免Druid引入的第三方包之间有冲突。
+2.避免Druid引入的第三方包之间有冲突。  
+
+## 2017－07-13 更新  
+
+出现一个很奇怪的问题，druid在提交mr的时候不停的出现一下问题：  
+
+```
+Failing over to rm1
+Failing over to rm2
+Failing over to rm1
+Failing over to rm2
+Failing over to rm1
+```
+
+### 问题原因  
+
+在提交MR的时候，需要从zookeeper获取主ResouceManager，然后得到的`rm1`，然后查找`yarn.resourcemanager.address.rm1`，这个时候找不到这个参数，默认的就访问`0.0.0.0:8032`，所以无法连接到ResouceManager，就会出现上面的问题，尝试切换到其他ResouceManager。  
+
+### 解决办法  
+修改druid classpath下的yarn-site.xml，增加一下参数：  
+
+```
+    <property>
+          <name>yarn.resourcemanager.address.rm1</name>
+          <value>hd-node-1:8032</value>
+    </property>
+
+    <property>
+          <name>yarn.resourcemanager.address.rm2</name>
+          <value>hd-node-2:8032</value>
+    </property>
+
+    <property>
+          <name>yarn.resourcemanager.admin.address.rm1</name>
+          <value>hd-node-1:8033</value>
+    </property>
+
+    <property>
+          <name>yarn.resourcemanager.admin.address.rm2</name>
+          <value>hd-node-2:8033</value>
+    </property>
+    <property>
+          <name>yarn.resourcemanager.resource-tracker.address.rm1</name>
+          <value>hd-node-1:8031</value>
+    </property>
+
+    <property>
+          <name>yarn.resourcemanager.resource-tracker.address.rm2</name>
+          <value>hd-node-2:8031</value>
+    </property>
+
+    <property>
+          <name>yarn.resourcemanager.scheduler.address.rm1</name>
+          <value>hd-node-1:8030</value>
+    </property>
+
+    <property>
+          <name>yarn.resourcemanager.scheduler.address.rm2</name>
+          <value>hd-node-2:8030</value>
+    </property>
+```
+
+说明：`hd-node-1`和`hd-node-2`分别对应的rm1和rm2。
