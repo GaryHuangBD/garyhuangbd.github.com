@@ -21,7 +21,7 @@ Druid首先是一个BI的OLAP查询系统，它最开始被设计的目的是为
 
 ## Druid数据结构  
 
-传统的RDBMS中，我们只有维度的概念，分析数据时我们可以聚合维度和筛选维度。而Druid的数据是不同的，拿下面这份数据来举例(数据来源于Druid官方)：  
+传统的RDBMS中只有维度的概念，分析数据时我们可以聚合维度和筛选维度。而Druid的数据是不同的，拿下面这份数据来举例(数据来源于Druid官方)：  
 
     timestamp             publisher          advertiser  gender  country  click  price
     2011-01-01T01:01:35Z  bieberfever.com    google.com  Male    USA      0      0.65
@@ -31,7 +31,7 @@ Druid首先是一个BI的OLAP查询系统，它最开始被设计的目的是为
     2011-01-01T02:00:00Z  ultratrimfast.com  google.com  Female  UK       0      0.99
     2011-01-01T02:00:00Z  ultratrimfast.com  google.com  Female  UK       1      1.53  
 
-对于Druid来说，我们可以根据自己分析的需求来建立自己的模型，不需要的信息可以不存储，有点类似于建立数据集市的概念。假如我们的目的是分析publisher和advertiser的点击量，建立模型包括以下三部分内容：  
+Druid可以根据分析的需求来建立模型，不需要的信息可以不存储，有点类似于建立数据集市的概念。假如目的是分析publisher和advertiser的点击量，建立模型包括以下三部分内容：  
 * **时间列** 每一条数据都必须有此列，此列会决定数据所在的Segment(后面会介绍)，所有的查询也都需要此列，在上面对应的数据列为`timestamp`，在系统中会存储的字段名为`__time`；  
 * **维度列** Druid会针对这些列建立bitmap的倒排索引，用于筛选数据，结合时间列便能快速找到需要查询的数据。根据假设的分析模型，我们只需要`publisher`和`advertiser`，而其他例如`gender`和`country`并非我们需要分析的列，便可以在建立模型的时候忽略，需要注意的是Druid只有String型的维度列，如果我们需要对维度列做数字范围的筛选，需要做特殊处理  
 * **聚合列(metric column)** Druid会根据我们定义的时间粒度，再结合维度列在数据接入的时候对数据进行聚合，并根据聚合类型，用不同的数据结构来保存这一列。这一列算是Druid比较复杂的一个概念，与下面介绍的预聚合有很大关系，稍后我会进一步解释。在假设的分析模型中，我们需要对`click`列求`sum`。  
