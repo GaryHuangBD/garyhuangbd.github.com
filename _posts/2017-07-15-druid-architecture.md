@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  "Druid的基本概念"
+title:  "Druid原理(-)--基本概念"
 date:   2017-07-10 17:27:00
 categories: Druid
 tags: Druid
