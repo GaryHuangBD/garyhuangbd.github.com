@@ -84,16 +84,16 @@ Druid的预聚合过程也是其索引的过程，通常Druid会在内存中使�
 
 于是，样例数据最后存储的格式大概为：  
 
- Segment `sampleData_2011-01-01T01:00:00:00Z_2011-01-01T02:00:00:00Z_v1_0` 
-|__time|publisher|advertiser|rows|click_sum|
-|------|---------|----------|----|---------|
+ Segment `sampleData_2011-01-01T01:00:00:00Z_2011-01-01T02:00:00:00Z_v1_0`  
+| __time | publisher | advertiser | rows | click_sum |
+|--------|-----------|------------|------|-----------|
 | 2011-01-01T01:00:00Z | ultratrimfast.com | google.com | 1 | 0 |
 | 2011-01-01T01:00:00Z | bieberfever.com | google.com | 3 | 1 |
 
 
-Segment `sampleData_2011-01-01T02:00:00:00Z_2011-01-01T03:00:00:00Z_v1_0` 
-|__time|publisher|advertiser|rows|click_sum|
-|------|---------|----------|----|---------|
+Segment `sampleData_2011-01-01T02:00:00:00Z_2011-01-01T03:00:00:00Z_v1_0`   
+| __time | publisher | advertiser | rows | click_sum |
+|--------|-----------|------------|------|-----------|
 | 2011-01-01T02:00:00Z | ultratrimfast.com | google.com | 2 | 1 |
 
 >`segmentGranularity`为小时，所以对应的段都是小时级别。`queryGranularity`为小时，聚合的结果对应的__time也是整点，会将每小时的数据全部聚合到其所属小时的开始时间。另外说明，倒数第二例为总共的行数，最后一列为点击数。  
