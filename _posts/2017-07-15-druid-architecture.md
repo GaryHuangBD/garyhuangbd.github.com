@@ -55,11 +55,13 @@ Druid可以根据分析的需求来建立模型，不需要的信息可以不存
         }
       }
     },
-    "metricsSpec": [
-    {
+    "metricsSpec": [{
+      "type" : "count",  # 统计行数
+      "name" : "rows"
+    },{
        "name": "click_sum",
        "fieldName": "click",
-       "type": "longSum"
+       "type": "longSum"    ＃整数求和
     }],
     "granularitySpec" : {     #预聚合相关的配置
       "segmentGranularity" : "HOUR",
@@ -98,7 +100,8 @@ Segment `sampleData_2011-01-01T02:00:00:00Z_2011-01-01T03:00:00:00Z_v1_0`
 |--------|-----------|------------|-----:|----------:|
 | 2011-01-01T02:00:00Z | ultratrimfast.com | google.com | 2 | 1 |
 
->`segmentGranularity`为小时，所以对应的段都是小时级别。`queryGranularity`为小时，聚合的结果对应的__time也是整点，会将每小时的数据全部聚合到其所属小时的开始时间。另外说明，倒数第二例为总共的行数，最后一列为点击数。  
+>`segmentGranularity`为小时，所以对应的段都是小时级别。`queryGranularity`为小时，聚合的结果对应的__time也是整点，会将每小时的数据全部聚合到其所属小时的开始时间。
+>另外说明，倒数第二例为总共的行数，最后一列为点击数。`sampleData_2011-01-01T02:00:00:00Z_2011-01-01T03:00:00:00Z_v1_0`中的`v1`通常为Task启动时获取的TaskLock的version，可以理解为Task启动的时间。  
 
 ## Druid集群  
 
