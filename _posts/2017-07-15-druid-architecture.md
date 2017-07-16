@@ -24,7 +24,7 @@ Druid首先是一个BI的OLAP查询系统，它最开始被设计的目的是为
 传统的RDBMS中只有维度的概念，分析数据时我们可以聚合维度和筛选维度。而Druid的数据是不同的，拿下面这份数据来举例(数据来源于Druid官方)：  
 
 | timestamp | publisher | advertiser | gender | country | click | price |
-|-----------|-----------|------------|--------|---------|-------|-------|
+|-----------|-----------|------------|--------|---------|------:|------:|
 | 2011-01-01T01:01:35Z | bieberfever.com | google.com | Male | USA | 0 | 0.65 |
 | 2011-01-01T01:03:63Z | bieberfever.com | google.com | Male | USA | 0 | 0.62 |
 | 2011-01-01T01:04:51Z | bieberfever.com | google.com | Male | USA | 1 | 0.45 |
@@ -87,7 +87,7 @@ Druid的预聚合过程也是其索引的过程，通常Druid会在内存中使�
  Segment `sampleData_2011-01-01T01:00:00:00Z_2011-01-01T02:00:00:00Z_v1_0`  
 
 | __time | publisher | advertiser | rows | click_sum |
-|--------|-----------|------------|------|-----------|
+|--------|-----------|------------|-----:|----------:|
 | 2011-01-01T01:00:00Z | ultratrimfast.com | google.com | 1 | 0 |
 | 2011-01-01T01:00:00Z | bieberfever.com | google.com | 3 | 1 |
 
@@ -95,7 +95,7 @@ Druid的预聚合过程也是其索引的过程，通常Druid会在内存中使�
 Segment `sampleData_2011-01-01T02:00:00:00Z_2011-01-01T03:00:00:00Z_v1_0`   
 
 | __time | publisher | advertiser | rows | click_sum |
-|--------|-----------|------------|------|-----------|
+|--------|-----------|------------|-----:|----------:|
 | 2011-01-01T02:00:00Z | ultratrimfast.com | google.com | 2 | 1 |
 
 >`segmentGranularity`为小时，所以对应的段都是小时级别。`queryGranularity`为小时，聚合的结果对应的__time也是整点，会将每小时的数据全部聚合到其所属小时的开始时间。另外说明，倒数第二例为总共的行数，最后一列为点击数。  
