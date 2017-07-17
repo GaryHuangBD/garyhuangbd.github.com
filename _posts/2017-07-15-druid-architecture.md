@@ -106,7 +106,7 @@ Segment `sampleData_2011-01-01T02:00:00:00Z_2011-01-01T03:00:00:00Z_v1_0`
 ## Druid集群  
 
 Druid集群按照功能分为不同节点类型，这些功能节点相互之间没有绝对依赖，可以独立工作，这在一定程度上保证了Druid的稳定性。我总结的Druid的结构如下图：  
-![Druid架构图](http://img2.ph.126.net/trs2ZSa2XoqYSkysqKXrwA==/6632343199188865139.jpg)   
+![Druid架构图](http://wx2.sinaimg.cn/mw690/9298b424gy1fhmpkpzsvdj20kp0gkjs3.jpg)   
 
 Druid主要的节点类型包括：  
 
