@@ -253,7 +253,7 @@ public static void setupClasspath(
 1.上传jar时，不上传hadoop相关的jar；  
 2.避免Druid引入的第三方包之间有冲突。  
 
-## 2017－07-13 更新  
+## 2017-07-13 更新  
 
 出现一个很奇怪的问题，druid在提交mr的时候不停的出现一下问题：  
 
@@ -313,4 +313,80 @@ Failing over to rm1
     </property>
 ```
 
-说明：`hd-node-1`和`hd-node-2`分别对应的rm1和rm2。
+说明：`hd-node-1`和`hd-node-2`分别对应的rm1和rm2。  
+
+## 2017-07-26 更新  
+
+最近druid在提交MR作业的过程中又出现了两个问题，现在总结下。  
+
+1. 发现druid的task会提交后，直接失败，在ResourceManager ui上发现AppMaster的Container中出现以下错误：  
+
+```
+log4j:ERROR setFile(null,true) call failed.
+java.io.FileNotFoundException: /hadoop/yarn/log/application_***/container_**** (Is a directory)
+    at java.io.FileOutputStream.open0(Native Method)
+    at java.io.FileOutputStream.open(FileOutputStream.java:270)
+    at java.io.FileOutputStream.<init>(FileOutputStream.java:213)
+    at java.io.FileOutputStream.<init>(FileOutputStream.java:133)
+    at org.apache.log4j.FileAppender.setFile(FileAppender.java:294)
+    at org.apache.log4j.FileAppender.activateOptions(FileAppender.java:165)
+    at org.apache.hadoop.yarn.ContainerLogAppender.activateOptions(ContainerLogAppender.java:55)
+    at org.apache.log4j.config.PropertySetter.activate(PropertySetter.java:307)
+    at org.apache.log4j.config.PropertySetter.setProperties(PropertySetter.java:172)
+    at org.apache.log4j.config.PropertySetter.setProperties(PropertySetter.java:104)
+    at org.apache.log4j.PropertyConfigurator.parseAppender(PropertyConfigurator.java:842)
+    at org.apache.log4j.PropertyConfigurator.parseCategory(PropertyConfigurator.java:768)
+```
+
+### 原因分析    
+
+我排查了一下Hadoop代码，这个问题应该是Log4j问题，如果我们仔细留意会发现在`hadoop-yarn-server-nodemanager-{version}.jar`里面有一个container-log4j.properties文件，然后如果我们在留意MR运行时生成的launch_container.sh的脚本里(或者用命令查看AppMaster进程的启动参数)，会有一个参数`-Dlog.configurationFile=container-log4j.properties`，这说明AppMaster进程使用的log4j是container-log4j.properties。  
+container-log4j.properties中有一项非常重要的配置`log4j.appender.CLA.containerLogFile=${hadoop.root.logfile}`，而我们查看整个文件，却没有`hadoop.root.logfile`具体的值。知道这个，那我们自然很容易解决问题了。  
+
+### 解决办法  
+
+为了解决这个问题，只需要在AppMaster启动进程中加上`-Dhadoop.root.logfile=syslog`即可，而Hadoop的参数中正好有这一项，`yarn.app.mapreduce.am.command-opts`，我们可以直接修改Hadoop的mapred-site.xml，也可以在druid的task spec文件中直接增加：  
+``` 
+"jobProperties": {
+  "mapreduce.job.classloader": "true",
+  "yarn.app.mapreduce.am.command-opts": "-Xmx2048m -Dhadoop.root.logfile=syslog",
+  "mapreduce.job.classloader.system.classes": "-javax.validation.,java.,javax.,org.apache.commons.logging.,org.apache.log4j.,org.apache.hadoop."
+}
+```
+
+2. 引入druid-orc-extensions后，导入OrcFile的数据过程中又出现了一个问题：  
+```
+ERROR [main] org.apache.hadoop.mapred.YarnChild: Error running child : com.google.common.util.concurrent.ExecutionError: java.lang.IncompatibleClassChangeError: Implementing class
+    at com.google.common.cache.LocalCache$Segment.get(LocalCache.java:2199)
+    at com.google.common.cache.LocalCache.get(LocalCache.java:3934)
+    at com.google.common.cache.LocalCache.getOrLoad(LocalCache.java:3938)
+    at com.google.common.cache.LocalCache$LocalLoadingCache.get(LocalCache.java:4821)
+    at com.google.common.cache.LocalCache$LocalLoadingCache.getUnchecked(LocalCache.java:4827)
+    at com.google.inject.internal.FailableCache.get(FailableCache.java:48)
+    at com.google.inject.internal.MembersInjectorStore.get(MembersInjectorStore.java:68)
+    at com.google.inject.internal.InjectorImpl.getMembersInjector(InjectorImpl.java:993)
+    at com.google.inject.internal.InjectorImpl.getMembersInjector(InjectorImpl.java:1000)
+    at com.google.inject.internal.InjectorImpl.injectMembers(InjectorImpl.java:986)
+    at io.druid.initialization.Initialization$ModuleList.addModule(Initialization.java:397)
+    at io.druid.initialization.Initialization$ModuleList.addModules(Initialization.java:416)
+    at io.druid.initialization.Initialization.makeInjectorWithModules(Initialization.java:320)
+    at io.druid.indexer.HadoopDruidIndexerConfig.<clinit>(HadoopDruidIndexerConfig.java:99)
+    at io.druid.indexer.HadoopDruidIndexerMapper.setup(HadoopDruidIndexerMapper.java:48)
+    at io.druid.indexer.DetermineHashedPartitionsJob$DetermineCardinalityMapper.setup(DetermineHashedPartitionsJob.java:224)
+    at io.druid.indexer.DetermineHashedPartitionsJob$DetermineCardinalityMapper.run(DetermineHashedPartitionsJob.java:282)
+    at org.apache.hadoop.mapred.MapTask.runNewMapper(MapTask.java:787)
+    at org.apache.hadoop.mapred.MapTask.run(MapTask.java:341)
+    at org.apache.hadoop.mapred.YarnChild$2.run(YarnChild.java:164)
+    at java.security.AccessController.doPrivileged(Native Method)
+    at javax.security.auth.Subject.doAs(Subject.java:422)
+    at org.apache.hadoop.security.UserGroupInformation.doAs(UserGroupInformation.java:1693)
+    at org.apache.hadoop.mapred.YarnChild.main(YarnChild.java:158)
+```
+
+### 问题原因  
+
+这个问题并非一定会出现，从错误上来看应该是包冲突引起的。毕竟orc依赖hive，而hive的依赖有那么多，其实真的有必要把不必要的包exclude，在排查这个问题，我并没有花费提多时间。一般解决我不清楚的问题，我第一反应是google，搜索到后基本能够快速解决。如果10分钟时间，google还帮助不到我的时候，我才会自己想办法解决。还好这个问题我直接就搜索到了：https://groups.google.com/forum/#!topic/druid-user/MHkOVmLGPx8  
+
+### 解决办法  
+
+直接在druid-orc-extensions删除jetty-all这个包。
