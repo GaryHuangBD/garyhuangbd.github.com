@@ -315,11 +315,9 @@ Failing over to rm1
 
 说明：`hd-node-1`和`hd-node-2`分别对应的rm1和rm2。  
 
-## 2017-07-26 更新  
+## 2017-07-21 更新  
 
-最近druid在提交MR作业的过程中又出现了两个问题，现在总结下。  
-
-1. 发现druid的task会提交后，直接失败，在ResourceManager ui上发现AppMaster的Container中出现以下错误：  
+最近druid在提交MR作时，发现druid的task会提交后，直接失败，在ResourceManager ui上发现AppMaster的Container中出现以下错误：  
 
 ```
 log4j:ERROR setFile(null,true) call failed.
@@ -354,7 +352,10 @@ container-log4j.properties中有一项非常重要的配置`log4j.appender.CLA.c
 }
 ```
 
-2. 引入druid-orc-extensions后，导入OrcFile的数据过程中又出现了一个问题：  
+
+## 2017-07-26 更新  
+
+引入druid-orc-extensions后，导入OrcFile的数据过程中又出现了一个问题：  
 ```
 ERROR [main] org.apache.hadoop.mapred.YarnChild: Error running child : com.google.common.util.concurrent.ExecutionError: java.lang.IncompatibleClassChangeError: Implementing class
     at com.google.common.cache.LocalCache$Segment.get(LocalCache.java:2199)
